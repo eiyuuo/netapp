@@ -1,0 +1,35 @@
+{% extends 'layout.html' %}
+
+{% block header %}
+  <h1>{% block title %}Log In{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="username">Username</label>
+    <input name="username" id="username" required>
+    <label for="password">Password</label>
+    <input type="password" name="password" id="password" required>
+    <input type="submit" value="Log In">
+  </form>
+
+  <div class="oauth">
+    <h2>Use OAuth</h2>
+    <a
+      class="oauth__button oauth__button_google"
+      href="{{ url_for('google.login') }}"
+    >
+      <span class="oauth__link-text">
+        Login with Google
+      </span>
+    </a>
+    <a
+      class="oauth__button oauth__button_github"
+      href="{{ url_for('github.login') }}"
+    >
+      <span class="oauth__link-text">
+        Login with GitHub
+      </span>
+    </a>
+  </div>
+{% endblock %}
