@@ -1,9 +1,18 @@
-from flask import Flask, request, render_template
+import os
+from flask import Flask, request, render_template, redirect, url_for
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-import os
-app = Flask(__name__)
+from flask_dance.contrib.google import make_google_blueprint, google
 
+app = Flask(__name__)
+#Flask-dance-google-edition
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersekrit")
+app.config["GOOGLE_OAUTH_CLIENT_ID"] = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
+app.config["GOOGLE_OAUTH_CLIENT_SECRET"] = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
+google_bp = make_google_blueprint(scope=["profile", "email"])
+app.register_blueprint(google_bp, url_prefix="/login")
+
+#db 
 db_uri = os.environ.get('DATABASE_URL') 
 app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
 db = SQLAlchemy(app)
@@ -89,6 +98,15 @@ def result():
     db.session.add(admin)
     db.session.commit()
     return render_template("bbs_result.html", article=article, name=name, now=date)
+
+@app.route("/")
+def index():
+    if not google.authorized:
+        return redirect(url_for("google.login"))
+    resp = google.get("/oauth2/v1/userinfo")
+    assert resp.ok, resp.text
+    #return "You are {email} on Google".format(email=resp.json()["email"])
+    return render_template("login.html")
 
 if __name__ == "__main__":
     app.run(debug=False)
